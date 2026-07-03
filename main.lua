@@ -1,83 +1,49 @@
--- पुराने किसी भी GUI को साफ़ करना (क्रैश फिक्स)
+-- ====================================================================
+--                      PD HUB - FULL SCRIPT WITH KEY SYSTEM
+-- ====================================================================
+
+-- पुराने GUI को साफ़ करना
 pcall(function()
     if game.CoreGui:FindFirstChild("HazeSeasSmartScrollGUI") then game.CoreGui.HazeSeasSmartScrollGUI:Destroy() end
     if game.CoreGui:FindFirstChild("HazeSeasKeySystemGUI") then game.CoreGui.HazeSeasKeySystemGUI:Destroy() end
     if game.CoreGui:FindFirstChild("PDHubSimpleButtonGUI") then game.CoreGui.PDHubSimpleButtonGUI:Destroy() end
 end)
 
--- 🔑 KEY और LOOTSLABS सेटिंग्स
-local CorrectKey = "DRAGON_FREE_99"
-local LootsLabsLink = "https://lootslabs.com/your_link_here"
+-- 🔑 तुम्हारी कड़क की (Key) और नया LootsLabs लिंक यहाँ सेट कर दिया है
+local CorrectKey = "Free_PDHUBkey@_@24hours" 
+local LootsLabsLink = "https://loot-link.com/s?ZB40leqh"
 
--- ==================== KEY SYSTEM UI ====================
-local KeySG = Instance.new("ScreenGui")
-KeySG.Name = "HazeSeasKeySystemGUI"
-KeySG.ResetOnSpawn = false
-KeySG.Parent = game.CoreGui
+-- सेविंग फाइल का नाम (प्लेयर के डिवाइस में सेव होगा)
+local SaveFileName = "PDHub_KeySave.txt" 
 
-local KeyFrame = Instance.new("Frame")
-KeyFrame.Size = UDim2.new(0, 320, 0, 180)
-KeyFrame.Position = UDim2.new(0.35, 0, 0.35, 0)
-KeyFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-KeyFrame.Active = true
-KeyFrame.Draggable = true
-KeyFrame.Parent = KeySG
+-- फंक्शन: चेक करना कि क्या प्लेयर के पास पहले से 24 घंटे वाली वैलिड की है
+local function HasValidKey()
+    if isfile and readfile and isfile(SaveFileName) then
+        local savedData = readfile(SaveFileName)
+        local savedTime = tonumber(savedData)
+        if savedTime then
+            -- os.time() सेकंड्स में होता है। 24 घंटे = 86400 सेकंड्स
+            if os.time() - savedTime < 86400 then
+                return true -- 24 घंटे अभी पूरे नहीं हुए, की वैलिड है!
+            end
+        end
+    end
+    return false
+end
 
-Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 8)
-
-local KeyTitle = Instance.new("TextLabel")
-KeyTitle.Size = UDim2.new(1, 0, 0, 35)
-KeyTitle.BackgroundColor3 = Color3.fromRGB(140, 25, 25)
-KeyTitle.Text = "🔑 PD HUB KEY SYSTEM"
-KeyTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-KeyTitle.Font = Enum.Font.SourceSansBold
-KeyTitle.TextSize = 14
-KeyTitle.Parent = KeyFrame
-Instance.new("UICorner", KeyTitle).CornerRadius = UDim.new(0, 8)
-
-local TextBox = Instance.new("TextBox")
-TextBox.Size = UDim2.new(0, 260, 0, 35)
-TextBox.Position = UDim2.new(0.1, 0, 0.3, 0)
-TextBox.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-TextBox.Text = ""
-TextBox.PlaceholderText = "Enter Key Here..."
-TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextBox.Font = Enum.Font.SourceSans
-TextBox.TextSize = 14
-TextBox.Parent = KeyFrame
-Instance.new("UICorner", TextBox).CornerRadius = UDim.new(0, 4)
-
-local GetKeyBtn = Instance.new("TextButton")
-GetKeyBtn.Size = UDim2.new(0, 120, 0, 30)
-GetKeyBtn.Position = UDim2.new(0.1, 0, 0.6, 0)
-GetKeyBtn.BackgroundColor3 = Color3.fromRGB(35, 60, 130)
-GetKeyBtn.Text = "🔗 GET KEY"
-GetKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-GetKeyBtn.Font = Enum.Font.SourceSansBold
-GetKeyBtn.Parent = KeyFrame
-Instance.new("UICorner", GetKeyBtn).CornerRadius = UDim.new(0, 4)
-
-local CheckKeyBtn = Instance.new("TextButton")
-CheckKeyBtn.Size = UDim2.new(0, 120, 0, 30)
-CheckKeyBtn.Position = UDim2.new(0.53, 0, 0.6, 0)
-CheckKeyBtn.BackgroundColor3 = Color3.fromRGB(40, 120, 40)
-CheckKeyBtn.Text = "CHECK KEY ✅"
-CheckKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CheckKeyBtn.Font = Enum.Font.SourceSansBold
-CheckKeyBtn.Parent = KeyFrame
-Instance.new("UICorner", CheckKeyBtn).CornerRadius = UDim.new(0, 4)
-
-GetKeyBtn.MouseButton1Click:Connect(function()
-    setclipboard(LootsLabsLink)
-    GetKeyBtn.Text = "LINK COPIED! 📋"
-    task.wait(2)
-    GetKeyBtn.Text = "🔗 GET KEY"
-end)
-
--- ==================== MAIN HUB LOADING ====================
+-- असली हब लोड करने का फंक्शन
 local function LoadMainHub()
-    KeySG:Destroy() -- की GUI हटाओ
+    -- अगर की-सिस्टम की स्क्रीन खुली है, तो उसे हटाओ
+    if game.CoreGui:FindFirstChild("HazeSeasKeySystemGUI") then 
+        game.CoreGui.HazeSeasKeySystemGUI:Destroy() 
+    end
     
+    -- डिवाइस में करंट टाइम सेव कर दो ताकि अगले 24 घंटे तक यह दोबारा की न मांगे
+    if writefile then
+        writefile(SaveFileName, tostring(os.time()))
+    end
+
+    -- ==================== यहाँ से तुम्हारा असली वर्किंग कोड शुरू ====================
     _G.TargetNPC = ""
     _G.AutoFarm = false
     _G.UniversalFastAttack = true
@@ -115,14 +81,14 @@ local function LoadMainHub()
     MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 18)
     MainFrame.Active = true
     MainFrame.Draggable = true
-    MainFrame.Visible = false -- शुरुआत में बटन दबाने पर ही खुलेगा
+    MainFrame.Visible = false
     MainFrame.Parent = SG
 
     Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 
     local TopBar = Instance.new("Frame")
     TopBar.Size = UDim2.new(1, 0, 0, 30)
-    TopBar.BackgroundColor3 = Color3.fromRGB(140, 25, 25) -- PD HUB रेड थीम
+    TopBar.BackgroundColor3 = Color3.fromRGB(140, 25, 25)
     TopBar.Parent = MainFrame
 
     local TL = Instance.new("TextLabel")
@@ -135,7 +101,7 @@ local function LoadMainHub()
     TL.Font = Enum.Font.SourceSansBold
     TL.Parent = TopBar
 
-    -- ==================== 📱 सिंपल फ्लोटिंग ओपन बटन ====================
+    -- सिंपल फ्लोटिंग बटन
     local ButtonSG = Instance.new("ScreenGui")
     ButtonSG.Name = "PDHubSimpleButtonGUI"
     ButtonSG.ResetOnSpawn = false
@@ -150,7 +116,7 @@ local function LoadMainHub()
     ToggleButton.Font = Enum.Font.SourceSansBold
     ToggleButton.TextSize = 14
     ToggleButton.Active = true
-    ToggleButton.Draggable = true -- प्लेयर इसे स्क्रीन पर कहीं भी खिसका सकता है
+    ToggleButton.Draggable = true
     ToggleButton.Parent = ButtonSG
     Instance.new("UICorner", ToggleButton).CornerRadius = UDim.new(0, 6)
 
@@ -160,7 +126,7 @@ local function LoadMainHub()
         ToggleButton.BackgroundColor3 = MainFrame.Visible and Color3.fromRGB(40, 40, 45) or Color3.fromRGB(140, 25, 25)
     end)
 
-    -- बाकी सारा पेजेस और वर्किंग कोड सिस्टम
+    -- बाकी सारा पेजेस और कोडिंग (Farming, Skills, etc.)
     local Sidebar = Instance.new("Frame")
     Sidebar.Size = UDim2.new(0, 100, 1, -30)
     Sidebar.Position = UDim2.new(0, 0, 0, 30)
@@ -233,7 +199,7 @@ local function LoadMainHub()
 
     local SF = Instance.new("ScrollingFrame")
     SF.Size = UDim2.new(1, 0, 0, 80)
-    SF.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    SF.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     SF.Parent = Page1
     Instance.new("UIListLayout", SF)
 
@@ -254,7 +220,6 @@ local function LoadMainHub()
     FarmBtn.Parent = Page1
 
     addToggle("⚡ 4X UNIVERSAL SPEED", "UniversalFastAttack", Page1)
-
     addToggle("Skill [Z]", "Skill_Z", Page2)
     addToggle("Skill [X]", "Skill_X", Page2)
     addToggle("Skill [C]", "Skill_C", Page2)
@@ -306,34 +271,10 @@ local function LoadMainHub()
                     tool:Activate()
                     local rem = game:GetService("ReplicatedStorage").Remotes.CombatEvent
                     rem:FireServer("Attack", tool.Name)
-                    if _G.UniversalFastAttack then
-                        rem:FireServer("Attack", tool.Name)
-                        rem:FireServer("Attack", tool.Name)
-                        rem:FireServer("Attack", tool.Name)
-                    end
                 end)
             end
         end
     end
-
-    task.spawn(function()
-        local vim = game:GetService("VirtualInputManager")
-        while true do
-            task.wait(1.2)
-            if _G.AutoFarm then
-                pcall(function()
-                    local keyCheck = {Z = _G.Skill_Z, X = _G.Skill_X, C = _G.Skill_C, V = _G.Skill_V, B = _G.Skill_B}
-                    for key, isEnabled in pairs(keyCheck) do
-                        if isEnabled then
-                            vim:SendKeyEvent(true, key, false, game)
-                            task.wait(0.05)
-                            vim:SendKeyEvent(false, key, false, game)
-                        end
-                    end
-                end)
-            end
-        end
-    end)
 
     task.spawn(function()
         while true do
@@ -363,24 +304,88 @@ local function LoadMainHub()
             end
         end
     end)
+end
 
-    RunService.RenderStepped:Connect(function()
-        if _G.AutoFarm and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.WalkSpeed = _G.RunSpeed
+-- ==================== MAIN LOGIC RUN ====================
+if HasValidKey() then
+    -- अगर प्लेयर के पास पहले से 24 घंटे वाली वैलिड की (Saved Key) है, तो सीधे हब खोल दो!
+    LoadMainHub()
+    print("PD HUB: Welcome back! Valid key found.")
+else
+    -- अगर की (Key) एक्सपायर हो चुकी है या पहली बार है, तो की-सिस्टम UI दिखाओ
+    local KeySG = Instance.new("ScreenGui")
+    KeySG.Name = "HazeSeasKeySystemGUI"
+    KeySG.ResetOnSpawn = false
+    KeySG.Parent = game.CoreGui
+
+    local KeyFrame = Instance.new("Frame")
+    KeyFrame.Size = UDim2.new(0, 320, 0, 180)
+    KeyFrame.Position = UDim2.new(0.35, 0, 0.35, 0)
+    KeyFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    KeyFrame.Active = true
+    KeyFrame.Draggable = true
+    KeyFrame.Parent = KeySG
+    Instance.new("UICorner", KeyFrame).CornerRadius = UDim.new(0, 8)
+
+    local KeyTitle = Instance.new("TextLabel")
+    KeyTitle.Size = UDim2.new(1, 0, 0, 35)
+    KeyTitle.BackgroundColor3 = Color3.fromRGB(140, 25, 25)
+    KeyTitle.Text = "🔑 PD HUB KEY SYSTEM"
+    KeyTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    KeyTitle.Font = Enum.Font.SourceSansBold
+    KeyTitle.TextSize = 14
+    KeyTitle.Parent = KeyFrame
+    Instance.new("UICorner", KeyTitle).CornerRadius = UDim.new(0, 8)
+
+    local TextBox = Instance.new("TextBox")
+    TextBox.Size = UDim2.new(0, 260, 0, 35)
+    TextBox.Position = UDim2.new(0.1, 0, 0.3, 0)
+    TextBox.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    TextBox.Text = ""
+    TextBox.PlaceholderText = "Enter Key Here..."
+    TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TextBox.Font = Enum.Font.SourceSans
+    TextBox.TextSize = 14
+    TextBox.Parent = KeyFrame
+    Instance.new("UICorner", TextBox).CornerRadius = UDim.new(0, 4)
+
+    local GetKeyBtn = Instance.new("TextButton")
+    GetKeyBtn.Size = UDim2.new(0, 120, 0, 30)
+    GetKeyBtn.Position = UDim2.new(0.1, 0, 0.6, 0)
+    GetKeyBtn.BackgroundColor3 = Color3.fromRGB(35, 60, 130)
+    GetKeyBtn.Text = "🔗 GET KEY"
+    GetKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    GetKeyBtn.Font = Enum.Font.SourceSansBold
+    GetKeyBtn.Parent = KeyFrame
+    Instance.new("UICorner", GetKeyBtn).CornerRadius = UDim.new(0, 4)
+
+    local CheckKeyBtn = Instance.new("TextButton")
+    CheckKeyBtn.Size = UDim2.new(0, 120, 0, 30)
+    CheckKeyBtn.Position = UDim2.new(0.53, 0, 0.6, 0)
+    CheckKeyBtn.BackgroundColor3 = Color3.fromRGB(40, 120, 40)
+    CheckKeyBtn.Text = "CHECK KEY ✅"
+    CheckKeyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CheckKeyBtn.Font = Enum.Font.SourceSansBold
+    CheckKeyBtn.Parent = KeyFrame
+    Instance.new("UICorner", CheckKeyBtn).CornerRadius = UDim.new(0, 4)
+
+    GetKeyBtn.MouseButton1Click:Connect(function()
+        setclipboard(LootsLabsLink)
+        GetKeyBtn.Text = "LINK COPIED! 📋"
+        task.wait(2)
+        GetKeyBtn.Text = "🔗 GET KEY"
+    end)
+
+    CheckKeyBtn.MouseButton1Click:Connect(function()
+        if TextBox.Text == CorrectKey then
+            CheckKeyBtn.Text = "CORRECT! 🎉"
+            task.wait(1)
+            LoadMainHub()
+        else
+            CheckKeyBtn.Text = "WRONG KEY! ❌"
+            TextBox.Text = ""
+            task.wait(1.5)
+            CheckKeyBtn.Text = "CHECK KEY ✅"
         end
     end)
 end
-
--- KEY CHECKING
-CheckKeyBtn.MouseButton1Click:Connect(function()
-    if TextBox.Text == CorrectKey then
-        CheckKeyBtn.Text = "CORRECT! 🎉"
-        task.wait(1)
-        LoadMainHub()
-    else
-        CheckKeyBtn.Text = "WRONG KEY! ❌"
-        TextBox.Text = ""
-        task.wait(1.5)
-        CheckKeyBtn.Text = "CHECK KEY ✅"
-    end
-end)
